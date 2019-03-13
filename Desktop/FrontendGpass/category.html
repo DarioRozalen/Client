@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+	<title>Gestion Categorias</title>
+
+	<style>
+	*
+	{
+		
+	}
+	body
+	{
+		background-color: lavender;
+	}
+	#cajaCrear
+	{
+		text-align: center;
+		padding: 5px;
+		margin-left: auto;
+		margin-right: auto;
+		width: 250px;
+	}
+
+
+	#Estructura
+	{
+		text-align: center;
+		padding: 5px;
+		margin-left: auto;
+		margin-right: auto;
+		width: 250px;
+		margin-top: inherit;
+	}
+
+	h1
+	{
+		margin-top: 10%;
+		text-align: center;
+	}
+
+	.cajaShow
+	{
+		text-align: center;
+		background-color: rgba(221, 183, 255, 0.5);
+
+		padding: 5px;
+		margin-left: auto;
+		margin-right: auto;
+		width: 250px;
+		margin-top: inherit;
+	}
+
+	.respuesta
+	{
+		text-align: center;
+
+		padding: 5px;
+		margin-left: auto;
+		margin-right: auto;
+		width: 200px;
+	}
+	
+	.btn
+	{
+		text-align: center;
+		padding: 5px;
+		margin-left: auto;
+		margin-right: auto;
+	}	
+	
+	.error
+	{
+		text-align: center;
+		background-color: purple;
+		padding: 5px;
+		margin-left: auto;
+		margin-right: auto;
+		width: 200px;
+		color:white;
+	}
+</style>
+</head>
+<body>
+
+
+	<div id="form" >
+
+		<h1>Crea una categoria</h1>
+
+		<div id="cajaCrear">
+			<input type="name" id="name" placeholder="Nombre de categoria">
+			<br><br>
+			<input type="submit" id="create_user" onclick="crearCategoria()" class="btn" value="Crear">
+			<br><br>
+		</div>
+	</div>
+
+	<div id="Estructura">
+		<div id="cajaShow">
+			<input class="btn" id="listUsers" type="button" onclick="mostrarCategorias()" value="Mostrar Categorias">
+		</div>
+	</div>
+
+	<div id="Estructura">
+		<input class="btn" type="button" onclick="CerrarSesion()" value="Cerrar Sesion">
+	</div>
+</body>
+
+<script type="text/javascript">
+
+
+	function crearCategoria()
+	{
+		$(".error").remove();
+		var name = $('#name').val();
+		var Authorization = sessionStorage.getItem("Authorization"); 
+		console.log(Authorization);
+		
+		$.ajax({
+			type: "POST",
+			url: "http://localhost:8888/GpassBack/Gpass/public/index.php/api/category",
+			headers: {
+				"Authorization": Authorization
+			},
+			data: {
+				"categoryName": name,
+			},
+			success: function(response){
+				// console.log(response);
+				var response = jQuery.parseJSON(response);
+				$('<div class="error"/>').html(response.message).appendTo('#cajaCrear');
+				console.log(response);
+				
+				
+			},
+			error: function(response){
+				console.log(response);
+				var response = jQuery.parseJSON(response.responseText);
+				$('<div class="error"/>').html(response.message).appendTo('#cajaCrear');
+				
+			}
+		});
+	}
+
+	
+
+	function mostrarCategorias(){
+
+		var authorization = sessionStorage.getItem("Authorization");
+		$(".error").remove();
+		$("#tabla").remove();
+		$.ajax({
+			method: "GET",
+			url: "http://localhost:8888/GpassBack/Gpass/public/index.php/api/category",
+			headers:
+			{
+				"Authorization" : authorization 
+			},
+			success: function(response){
+				
+				var response = jQuery.parseJSON(response);
+				console.log(response);
+				console.log(response.data);
+
+
+				if(document.getElementById("tabla") == null)
+				{
+					$('<table id="tabla"/>').html("").appendTo('#Estructura');
+					$('<th id="filaNombre" class="respuesta"/>').html("Nombre").appendTo('#tabla');
+					$('<th id="filaEditar" class="respuesta"/>').html("Editar").appendTo('#tabla');
+					$('<th id="filaBorrar" class="respuesta"/>').html("Borrar").appendTo('#tabla');
+
+					console.log("Entra");
+				}
+				
+
+				console.log("No entra");
+				for (i = 0; i < response.data.length; i++) {
+					//Columna Nombre
+					$('<div/><br>').html(response.data[i].name).appendTo('#filaNombre');
+				  	//Fila editar
+				  	$('<br>').html("").appendTo('#filaEditar');
+
+				  	$('<input id="name" type="text"  class="editName" placeholder="Nuevo Nombre">').html("").appendTo('#filaEditar').attr("id", response.data[i].id + "Name");
+				  	$('<input type="button" class="btn" onclick="editCategory(this)" value="Editar">').html("").appendTo('#filaEditar').attr("id", response.data[i].id);
+				  	$('<br>').html("").appendTo('#filaEditar');
+				  	//Fila Borrar
+				  	$('<br><input type="button" onclick="Delete(this)" class="btn" value="Borrar"><br>').html("").appendTo('#filaBorrar').attr("id", response.data[i].id);
+				  };
+				},
+				
+				error: function(response){
+					var response = jQuery.parseJSON(response.responseText);
+					$('<div class="error"/>').html(response.message).appendTo('body');
+		 		//alert(response.responseJSON['error]);
+		 	}
+		 });
+	}
+
+	function editCategory(button){
+		var Authorization = sessionStorage.getItem("Authorization");
+		var idCategory = button.id;
+		var name = document.getElementById(button.id + "Name");
+		$(".error").remove();
+
+
+		console.log(idCategory);
+		console.log(button.id);
+		console.log(name.value);
+
+		$.ajax({
+			method: "POST",
+			url: "http://localhost:8888/GpassBack/Gpass/public/index.php/api/updateCategory",
+			headers:
+			{
+				"Authorization" : Authorization 
+			},
+			data: {
+
+				idCategory: idCategory,
+				newName: name.value,
+				
+			},
+
+			success: function(response){
+				console.log("entrado en ok");
+				var response = jQuery.parseJSON(response);
+				$('<div class="error"/>').html(response.message).appendTo('#cajaShow');
+				mostrarCategorias();
+			},
+			
+			error: function(response){
+				console.log("entrado en fallo");
+				var response = jQuery.parseJSON(response.responseText);
+				console.log(response.message);
+				$('<div class="error"/>').html(response.message).appendTo('#cajaShow');
+			}
+		});
+	}
+
+	function Delete(button) {
+		var Authorization = sessionStorage.getItem("Authorization");
+		var idCategory = button.id;
+		console.log(idCategory);
+		$(".error").remove(); 
+		$.ajax({
+			method: "POST",
+			url: "http://localhost:8888/GpassBack/Gpass/public/index.php/api/deleteCategory",
+			headers:
+			{
+				"Authorization" : Authorization 
+			},
+			data: {
+
+				idCategory: idCategory
+				
+			},
+			success: function(response){
+				var response = jQuery.parseJSON(response);
+				$('<div class="error"/>').html(response.message).appendTo('#Estructura');
+				mostrarCategorias();
+			},
+			
+			error: function(response){
+				var response = jQuery.parseJSON(response.responseText);
+				$('<div class="error"/>').html(response.message).appendTo('#Estructura');
+				allUsers();
+			}
+		});		
+	}
+
+	function CerrarSesion()
+	{
+		console.log("CerrarSesion");
+		sessionStorage.clear();
+		window.location = "http://localhost:8888/GpassBack/Gpass/FrontendGpass/login.html";  
+	}
+</script>
+</html>

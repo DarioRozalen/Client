@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+    <meta charset="UTF-8">
+
+    <title>Login Gpass</title>
+    
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"> </script>
+    
+    <style>
+        *
+
+        body
+        {
+            background-color: lavender;
+        }  
+
+        h1
+        {
+            text-align: center;
+        }
+
+        .tablaLogin
+        {
+            position: absolute;
+            left: 50%;
+            top: 40%;
+            transform: translate(-50%, -50%);
+            -webkit-transform: translate(-50%, -50%);
+        }
+
+        .btn
+        {
+            text-align: center;
+            margin-left: 50px;
+            margin-right: auto;
+            margin-top: 10px; 
+        }
+
+
+
+
+    </style>
+    
+</head>
+<body>
+    <p id="error"></p>
+
+     <div id="form" class="tablaLogin">  
+        <h1>Login Gpass</h1>
+
+        <table >
+            <tr>
+                <td>Email</td>
+                <td><input type="email" id="mail"></td>
+            </tr>
+            <tr>
+                <td>Password</td>
+                <td><input type="password" id="password"></td>
+            </tr>
+            <tr><td>
+                <button onclick="peticion();" class="btn"> Login </button>
+            </td>
+            </tr>
+        </table>
+
+    </div>
+
+    <script>
+
+
+        function peticion(){
+            
+            var email = document.getElementById('mail').value;
+            var password = document.getElementById('password').value;
+
+            $.ajax({
+
+                // la URL para la petición
+                url : "http://localhost:8888/GpassBack/Gpass/public/index.php/api/login",
+
+
+             
+                // la información a enviar
+             
+                data : {password: password, email: email},
+             
+                // especifica si será una petición POST o GET
+
+                type : 'POST',
+             
+                // el tipo de información que se espera de respuesta
+                
+                dataType : 'json',
+             
+                // código a ejecutar si la petición es satisfactoria;
+                // la respuesta es pasada como argumento a la función
+
+
+
+                success : function(response) {
+                    console.log(response.data);
+                    sessionStorage.setItem("Authorization",response.data);
+                    console.log("Usuario Logeado");
+                    window.open("http://localhost:8888/GpassBack/Gpass/FrontendGpass/category.html");
+                    
+
+                },
+
+                error : function(response){
+
+                    console.log(response.responseJSON.message);
+                    $('#error').text(response.responseJSON.message); // mensaje que salta en el navegador
+                },
+
+                // complete : function(xhr, status){
+                //     console.log("Peticion realizada");
+                // }
+
+                 });
+
+
+                
+
+        }
+
+    </script>   
+
+
+</html>
